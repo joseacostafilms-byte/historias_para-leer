@@ -60,27 +60,34 @@ async function startServer() {
 
   // Gemini: Generate Next Story Node
   app.post("/api/story/generate", async (req, res) => {
-    const { currentStoryPath, readingLevel, recentStruggledWords } = req.body;
+    const { currentStoryPath, readingLevel, recentStruggledWords, pageNumber = 1, maxPages = 15, theme = "fantasy" } = req.body;
     
+    const isEnding = pageNumber >= maxPages;
     // We want the AI to output a JSON object representing the next node.
     const prompt = `
       You are an interactive storyteller for a ${readingLevel || 'beginner'} reading level child.
-      The story so far: ${currentStoryPath || "The hero begins their journey."}
+      Story Theme: ${theme}
+      Current Page: ${pageNumber} out of ${maxPages}.
+      The story so far: ${currentStoryPath || "The adventure begins."}
       
       Generate the next node in the story.
-      Keep the text short, engaging, and appropriate for the reading level.
-      If the child struggled with these words recently: ${recentStruggledWords ? recentStruggledWords.join(", ") : "none"}, try to gently include one or two of them to help them practice, but don't force it.
+      Keep the text engaging, and appropriate for the reading level (about 20-40 words).
+      ${recentStruggledWords && recentStruggledWords.length > 0 ? `Try to gently include one of these words to help them practice: ${recentStruggledWords.join(", ")}` : ""}
       
+      ${isEnding ? 
+        "This is the FINAL page. Provide an epic or heartwarming conclusion with a moral, and set choices to an empty array []." : 
+        "This is an ongoing page. Provide 2 short choices for the child to decide what happens next."}
+
       Respond STRICTLY in this JSON format, with no markdown formatting around it (just the JSON object):
       {
         "text": "The short paragraph of the story scene.",
         "imagePrompt": "A highly detailed, beautiful storybook illustration for children, depicting: [describe the scene visually]",
         "mood": "happy", // MUST be one of: "calm", "happy", "tense", "mysterious"
-        "choices": [
+        "choices": ${isEnding ? "[]" : `[
           { "text": "Choice 1 text", "intent": "branch_1" },
           { "text": "Choice 2 text", "intent": "branch_2" }
-        ],
-        "moral": "An optional moral if this happens to be a good ending (leave null if continuing)"
+        ]`},
+        "moral": ${isEnding ? '"Here goes the final moral of the adventure"' : "null"}
       }
     `;
 

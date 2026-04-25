@@ -3,83 +3,76 @@ import { Play, Sparkles, BookOpen, Brush, Star, Gamepad2, ChevronRight, Pause, F
 import { motion, AnimatePresence } from 'motion/react';
 
 // --- STORY DATA ---
-const storyData = {
-  id: 'dragon-chispa',
-  title: 'El Dragón Chispa',
-  nodes: {
-    start: {
-      text: 'Había una vez un pequeño dragón llamado Chispa. A diferencia de los demás dragones, Chispa no podía escupir fuego, solo pequeñas burbujas de jabón.',
-      imagePrompt: 'A highly detailed children storybook illustration of a cute sad little red dragon blowing soap bubbles instead of fire, charming fantasy background.',
-      mood: 'calm',
-      choices: [
-        { text: 'Ir al Bosque de Cristal', next: 'bosque' },
-        { text: 'Preguntar al Búho Sabio', next: 'buho' },
-      ],
-      image: 'dragon_sad',
-    },
-    bosque: {
-      text: 'En el Bosque de Cristal, Chispa conoció a una tortuga que estaba atrapada bajo una rama de cristal muy pesada.',
-      imagePrompt: 'A highly detailed children storybook illustration of a cute little red dragon meeting a turtle trapped under a heavy crystal branch in a glowing magical crystal forest.',
-      mood: 'mysterious',
-      choices: [
-        { text: 'Ayudar usando burbujas para levantar la rama', next: 'ayudar_tortuga' },
-        { text: 'Buscar a alguien más fuerte', next: 'buscar_fuerte' },
-      ],
-      image: 'bosque_tortuga',
-    },
-    buho: {
-      text: 'El Búho Sabio le dijo a Chispa que el verdadero fuego viene del corazón, cuando uno tiene valentía y ayuda a los demás.',
-      imagePrompt: 'A highly detailed children storybook illustration of a cute little red dragon listening to a wise majestic old owl perched on a tree branch, magical starry night.',
-      mood: 'calm',
-      choices: [
-        { text: 'Volar a la Montaña Alta para ser valiente', next: 'montana' },
-        { text: 'Volver a casa a pensar', next: 'casa' },
-      ],
-      image: 'buho_sabio',
-    },
-    ayudar_tortuga: {
-      text: '¡Las burbujas levantaron la rama! La tortuga agradecida le dio a Chispa una Gema de Valentía. De repente, Chispa sintió un calor en su pecho...',
-      imagePrompt: 'A highly detailed children storybook illustration of a cute little red dragon blowing giant glowing soap bubbles to lift a crystal branch off a happy turtle. Magical.',
-      mood: 'happy',
-      choices: [],
-      image: 'dragon_happy',
-      isEnding: true,
-      moral: 'La empatía y usar tus talentos únicos te hace especial.',
-    },
-    buscar_fuerte: {
-      text: 'Chispa se alejó para buscar ayuda. Cuando volvió con un oso, la tortuga ya se había liberado sola, pero estaba triste de que Chispa no intentara ayudar.',
-      imagePrompt: 'A highly detailed children storybook illustration of a sad little red dragon returning with a friendly bear, to see a turtle leaving on its own. Soft lighting.',
-      mood: 'tense',
-      choices: [],
-      image: 'dragon_sad',
-      isEnding: true,
-      moral: 'A veces, intentar ayudar es mejor que no hacer nada.',
-    },
-    montana: {
-      text: 'En la cima de la montaña, un fuerte viento amenazó con derribar el nido de un águila. Chispa usó su cuerpo para proteger los huevos.',
-      imagePrompt: 'A highly detailed children storybook illustration of a brave little red dragon shielding an eagle nest with glowing eggs from a harsh wind on a mountain peak.',
-      mood: 'mysterious',
-      choices: [],
-      image: 'dragon_brave',
-      isEnding: true,
-      moral: 'La verdadera valentía es proteger a los que lo necesitan.',
-    },
-    casa: {
-      text: 'Chispa volvió a casa. Estaba a salvo, pero seguía sintiéndose igual que antes. Decidió que mañana intentaría ser más valiente.',
-      imagePrompt: 'A highly detailed children storybook illustration of a cute little red dragon sleeping peacefully inside a cozy glowing crystal cave.',
-      mood: 'calm',
-      choices: [],
-      image: 'dragon_sleep',
-      isEnding: true,
-      moral: 'Los grandes cambios requieren tiempo y pequeños pasos.',
+export interface StoryDef {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string;
+  theme: string;
+  startNode: {
+    text: string;
+    imagePrompt?: string;
+    mood?: 'calm'|'happy'|'tense'|'mysterious';
+    choices: { text: string; intent?: string; next: string }[];
+  };
+}
+
+const AVAILABLE_STORIES: StoryDef[] = [
+  {
+    id: 'chispa',
+    title: 'El Dragón Chispa',
+    description: 'Un pequeño dragón que escupe burbujas en lugar de fuego buscando ser valiente.',
+    emoji: '🐉',
+    theme: 'Un dragón amigable que busca su lugar en el mundo. Magia, amistad, y autosuperación.',
+    startNode: {
+        text: 'Había una vez un pequeño dragón llamado Chispa. A diferencia de los demás dragones, Chispa no podía escupir fuego, solo pequeñas burbujas de jabón.',
+        imagePrompt: 'A highly detailed children storybook illustration of a cute sad little red dragon blowing soap bubbles instead of fire, charming fantasy background.',
+        mood: 'calm',
+        choices: [
+            { text: 'Ir al Bosque de Cristal', next: 'gen_chispa_1' },
+            { text: 'Preguntar al Búho Sabio', next: 'gen_chispa_2' }
+        ]
+    }
+  },
+  {
+    id: 'luna',
+    title: 'Luna en el Espacio',
+    description: 'Acompaña a Luna en su cohete para descubrir nuevos planetas.',
+    emoji: '🚀',
+    theme: 'Aventuras espaciales, planetas coloridos, estrellas y alienígenas amigables.',
+    startNode: {
+        text: 'Luna miró por la ventana de su cohete plateado. Estaba a punto de aterrizar en un planeta que parecía hecho completamente de gelatina brillante.',
+        imagePrompt: 'A highly detailed children storybook illustration of a brave little astronaut girl looking out of a silver rocket window at a glowing jelly planet in outer space.',
+        mood: 'mysterious',
+        choices: [
+            { text: 'Aterrizar en el Valle de Fresa', next: 'gen_luna_1' },
+            { text: 'Volar hacia los Anillos de Azúcar', next: 'gen_luna_2' }
+        ]
+    }
+  },
+  {
+    id: 'leo',
+    title: 'Leo el León Tímido',
+    description: 'Un leoncito que debe encontrar su gran rugido.',
+    emoji: '🦁',
+    theme: 'Animales de la sabana africana, selva, amistad y encontrar tu propia voz.',
+    startNode: {
+        text: 'Leo era un pequeño león con una gran melena dorada, pero cuando intentaba rugir, solo le salía un suave maullido. Sus amigos de la sabana siempre intentaban ayudarlo.',
+        imagePrompt: 'A highly detailed children storybook illustration of a cute shy lion cub with a golden mane trying to roar in the African savanna, with friendly animals watching.',
+        mood: 'calm',
+        choices: [
+            { text: 'Pedir consejo al Elefante Sabio', next: 'gen_leo_1' },
+            { text: 'Practicar en la Cueva de los Ecos', next: 'gen_leo_2' }
+        ]
     }
   }
-};
+];
 
-type AppState = 'menu' | 'dev_doc' | 'reading' | 'painting';
+type AppState = 'menu' | 'story_select' | 'dev_doc' | 'reading' | 'painting';
 
 export default function App() {
   const [appState, setAppState] = useState<AppState>('menu');
+  const [selectedStory, setSelectedStory] = useState<StoryDef>(AVAILABLE_STORIES[0]);
   const [gems, setGems] = useState(0);
   const [mood, setMood] = useState<'calm' | 'happy' | 'tense' | 'mysterious'>('calm');
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -164,12 +157,16 @@ export default function App() {
           {appState === 'menu' && (
             <MainMenu key="menu" onNavigate={setAppState} />
           )}
+          {appState === 'story_select' && (
+            <StorySelectView key="story_select" onNavigate={setAppState} onSelectStory={(s) => { setSelectedStory(s); setAppState('reading'); }} />
+          )}
           {appState === 'dev_doc' && (
             <DevDocumentation key="dev_doc" onNavigate={setAppState} />
           )}
           {appState === 'reading' && (
             <ReadingView 
               key="reading" 
+              story={selectedStory}
               onNavigate={setAppState} 
               onEarnGems={(amount) => setGems(g => g + amount)} 
               onMoodChange={setMood}
@@ -191,7 +188,7 @@ function MainMenu({ onNavigate }: { onNavigate: (s: AppState) => void }) {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className="flex flex-col items-center gap-8 w-full max-w-md bg-white p-6 rounded-3xl border-4 border-[#2D334A] shadow-[8px_8px_0px_0px_#2D334A]"
+      className="flex flex-col items-center gap-8 w-full max-w-md mx-auto bg-white p-6 rounded-3xl border-4 border-[#2D334A] shadow-[8px_8px_0px_0px_#2D334A]"
     >
       <div className="text-center space-y-4">
         <h2 className="text-4xl sm:text-5xl font-black uppercase tracking-tight text-[#2D334A]">
@@ -202,11 +199,11 @@ function MainMenu({ onNavigate }: { onNavigate: (s: AppState) => void }) {
 
       <div className="flex flex-col gap-4 w-full">
         <button 
-          onClick={() => onNavigate('reading')}
+          onClick={() => onNavigate('story_select')}
           className="w-full bg-[#55EFC4] text-[#2D334A] font-black uppercase tracking-wider py-4 px-8 rounded-3xl border-4 border-[#2D334A] shadow-[8px_8px_0px_0px_#2D334A] hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_#2D334A] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-4 text-xl group"
         >
           <Play className="group-hover:scale-125 transition-transform" fill="currentColor" />
-          Leer Historia
+          Elegir Historia
         </button>
         
         <button 
@@ -229,14 +226,56 @@ function MainMenu({ onNavigate }: { onNavigate: (s: AppState) => void }) {
   );
 }
 
-function ReadingView({ onNavigate, onEarnGems, onMoodChange }: { onNavigate: (s: AppState) => void, onEarnGems: (n: number) => void, onMoodChange: (mood: 'calm'|'happy'|'tense'|'mysterious') => void }) {
+function StorySelectView({ onNavigate, onSelectStory }: { onNavigate: (s: AppState) => void, onSelectStory: (story: StoryDef) => void }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="flex flex-col gap-6 w-full max-w-2xl mx-auto"
+    >
+      <div className="flex justify-between items-center bg-[#FFD93D] p-3 sm:p-4 border-4 border-[#2D334A] rounded-2xl shadow-[4px_4px_0px_0px_#2D334A]">
+        <button onClick={() => onNavigate('menu')} className="text-[#2D334A] font-black uppercase text-xs sm:text-sm flex items-center justify-center h-12 px-4 hover:opacity-80 active:translate-y-1">
+          Volver al Menú
+        </button>
+        <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#2D334A] text-center px-4">
+          Cuentos Mágicos
+        </h2>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {AVAILABLE_STORIES.map((story) => (
+          <div 
+            key={story.id}
+            onClick={() => onSelectStory(story)}
+            className="bg-white p-6 rounded-3xl border-4 border-[#2D334A] shadow-[8px_8px_0px_0px_#2D334A] hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_#2D334A] active:translate-y-2 active:shadow-none transition-all cursor-pointer flex flex-col items-center text-center gap-4 group"
+          >
+            <div className="text-6xl group-hover:scale-110 transition-transform">
+              {story.emoji}
+            </div>
+            <div>
+              <h3 className="text-2xl font-black uppercase text-[#2D334A] mb-2">{story.title}</h3>
+              <p className="text-[#2D334A] font-medium leading-tight">{story.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+function ReadingView({ story, onNavigate, onEarnGems, onMoodChange }: { story: StoryDef, onNavigate: (s: AppState) => void, onEarnGems: (n: number) => void, onMoodChange: (mood: 'calm'|'happy'|'tense'|'mysterious') => void }) {
   const [currentNodeId, setCurrentNodeId] = useState('start');
-  const [nodeData, setNodeData] = useState<any>((storyData.nodes as any)['start']);
+  const [nodeData, setNodeData] = useState<any>(story.startNode);
   const [speedState, setSpeedState] = useState<'paused' | 'listening'>('paused');
   const [wordIndex, setWordIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [struggles, setStruggles] = useState<Record<string, number>>({});
   const [errorInfo, setErrorInfo] = useState<string|null>(null);
+
+  // New states for dynamic length tracking
+  const [pageNumber, setPageNumber] = useState(1);
+  const [storyPath, setStoryPath] = useState(story.startNode.text);
 
   const words = nodeData?.text?.split(' ') || [];
   const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -362,60 +401,69 @@ function ReadingView({ onNavigate, onEarnGems, onMoodChange }: { onNavigate: (s:
     setStruggles({});
     setErrorInfo(null);
     
-    // Check local nodes
-    const localNode = (storyData.nodes as any)[nextId];
-    if (localNode) {
-      setCurrentNodeId(nextId);
-      setNodeData(localNode);
-      setSpeedState('listening');
-    } else {
-      // Dynamic AI generation
-      setIsGenerating(true);
-      setNodeData({ text: 'Pensando en la siguiente aventura...', choices: [] });
-      try {
-        const res = await fetch('/api/story/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            currentStoryPath: `El usuario eligió: ${choiceText}.`,
-            readingLevel: 'principiante'
-          })
-        });
-        
-        if (!res.ok) {
-           throw new Error(`Error ${res.status}`);
-        }
-        
-        const generatedNode = await res.json();
-        
-        // Ensure choices have generic next ids
-        if (generatedNode.choices) {
-          generatedNode.choices = generatedNode.choices.map((c: any, i: number) => ({
-            ...c,
-            next: `gen_${Date.now()}_${i}`
-          }));
-        }
-        
-        setNodeData(generatedNode);
-        setCurrentNodeId(`gen_${Date.now()}`);
-      } catch (e) {
-        setNodeData((prev: any) => ({
-           ...prev, 
-           text: 'El portal mágico parece cerrado. ¡Intenta de nuevo!',
-           choices: [ { text: "Reintentar", next: nextId, intent: "" } ]
-        }));
-        setErrorInfo("Hubo un problema de conexión con la IA de la historia. Por favor revisa tu internet y haz click en Reintentar.");
-        setSpeedState('paused'); // prevent infinite listening on error
-      } finally {
-        setIsGenerating(false);
+    // Dynamic AI generation
+    setIsGenerating(true);
+    setNodeData({ text: 'Pensando en la siguiente aventura...', choices: [] });
+
+    const newPageNumber = pageNumber + 1;
+    setPageNumber(newPageNumber);
+    const newStoryPath = `${storyPath}\n\nEl niño eligió: ${choiceText}.`;
+    setStoryPath(newStoryPath);
+
+    try {
+      const res = await fetch('/api/story/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentStoryPath: newStoryPath,
+          readingLevel: 'principiante',
+          pageNumber: newPageNumber,
+          maxPages: 15,
+          theme: story.theme
+        })
+      });
+      
+      if (!res.ok) {
+         throw new Error(`Error ${res.status}`);
       }
+      
+      const generatedNode = await res.json();
+      
+      // Update running story text for context
+      setStoryPath(`${newStoryPath}\n\n[Siguiente página generada: ${generatedNode.text}]`);
+
+      // Ensure choices have generic next ids
+      if (generatedNode.choices) {
+        generatedNode.choices = generatedNode.choices.map((c: any, i: number) => ({
+          ...c,
+          next: `gen_${Date.now()}_${i}`
+        }));
+      }
+      
+      setNodeData(generatedNode);
+      setCurrentNodeId(`gen_${Date.now()}`);
+      setSpeedState('listening');
+    } catch (e) {
+      setPageNumber(pageNumber); // Revert page number
+      setStoryPath(storyPath); // Revert context on error
+      setNodeData((prev: any) => ({
+         ...prev, 
+         text: 'El portal mágico parece cerrado. ¡Intenta de nuevo!',
+         choices: [ { text: "Reintentar", next: nextId, intent: "" } ]
+      }));
+      setErrorInfo("Hubo un problema de conexión con la IA de la historia. Por favor revisa tu internet y haz click en Reintentar.");
+      setSpeedState('paused'); // prevent infinite listening on error
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   const handleRestart = () => {
     setCurrentNodeId('start');
-    setNodeData((storyData.nodes as any)['start']);
+    setNodeData(story.startNode);
     setWordIndex(0);
+    setPageNumber(1);
+    setStoryPath(story.startNode.text);
     setSpeedState('paused');
     setErrorInfo(null);
   }
@@ -441,6 +489,9 @@ function ReadingView({ onNavigate, onEarnGems, onMoodChange }: { onNavigate: (s:
         }} className="text-[#2D334A] font-black uppercase text-xs sm:text-sm flex items-center justify-center h-12 px-4 hover:opacity-80 active:translate-y-1">
           Volver
         </button>
+        <div className="text-[#2D334A] font-black uppercase tracking-wider text-sm sm:text-base hidden sm:block">
+           Página {pageNumber} de 15
+        </div>
         <div className="flex gap-2 items-center">
             {speedState === 'listening' && !errorInfo && <div className="text-xs sm:text-sm font-bold animate-pulse text-red-500 mr-2">● Escuchando...</div>}
            <button 
